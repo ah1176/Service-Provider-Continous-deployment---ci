@@ -1,0 +1,6 @@
+@SeeviceProvider_PL_HostAddress = http://localhost:5193
+
+GET {{SeeviceProvider_PL_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
