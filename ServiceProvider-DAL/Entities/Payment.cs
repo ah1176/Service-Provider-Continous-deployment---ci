@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_DAL.Entities
 {
-    internal class Payment
+    public class Payment
     {
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_DAL.Data
 {
-    internal class SeedData
+    public class SeedData
     {
     }
 }
