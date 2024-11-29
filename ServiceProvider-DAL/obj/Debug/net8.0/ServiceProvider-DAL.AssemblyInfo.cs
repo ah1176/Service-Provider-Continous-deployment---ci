@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ServiceProvider-DAL")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe6bc86b54910e6ad840cdce3889857b7d8e33e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ec36f81a071ae6f75c8ad5d28209ebc089b70b72")]
 [assembly: System.Reflection.AssemblyProductAttribute("ServiceProvider-DAL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ServiceProvider-DAL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

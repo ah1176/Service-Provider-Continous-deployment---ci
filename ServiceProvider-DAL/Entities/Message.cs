@@ -12,8 +12,8 @@ namespace ServiceProvider_DAL.Entities
         public string MessageText { get; set; } 
         public DateTime MessageDate { get; set; } 
         public bool? IsRead {  get; set; }
-        public string ApplicationUserId { get; set; }
-        public string VendorId { get; set; }
+        public int ApplicationUserId { get; set; }
+        public int VendorId { get; set; }
         public int OrderId { get; set; }
 
         public ApplicationUser User { get; set; }

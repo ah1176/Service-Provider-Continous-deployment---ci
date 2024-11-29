@@ -51,11 +51,6 @@ namespace ServiceProvider_DAL.Data.Configurations
                 .HasForeignKey(r => r.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(p => p.CartProducts)
-                .WithOne(cp => cp.Product)
-                .HasForeignKey(cp => cp.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasMany(p => p.OrderProducts)
                 .WithOne(op => op.Product)
                 .HasForeignKey(op => op.ProductId)

@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Entities
         public string? Comment { get; set; } 
         public DateTime CreatedAt { get; set; }
 
-        public string ApplicationUserId { get; set; }
+        public int ApplicationUserId { get; set; }
         public int ProductId { get; set; }
 
         public virtual ApplicationUser User { get; set; }

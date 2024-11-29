@@ -9,16 +9,12 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_DAL.Data.Configurations
 {
-    internal class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
+    public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
             builder.Property(u => u.FullName).IsRequired().HasMaxLength(100);
             builder.Property(u => u.Address).HasMaxLength(250);
-
-            builder.HasOne(u => u.Cart)
-                   .WithOne(c => c.User)
-                   .HasForeignKey(c => c.ApplicationUserID);
 
             builder.HasMany(u => u.Messages)
                    .WithOne(m => m.User)

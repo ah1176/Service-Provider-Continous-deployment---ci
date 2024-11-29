@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_DAL.Entities
 {
-    internal class Category
+    public class Category
     {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public virtual ICollection<SubCategory> SubCategories { get; set; } = new List<SubCategory>();
     }
 }

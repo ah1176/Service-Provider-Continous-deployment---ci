@@ -11,7 +11,7 @@ namespace ServiceProvider_DAL.Entities
         public int OrderId { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime OrderDate { get; set; } 
-        public string OrderStatus { get; set; }
+        public OrderStatus Status { get; set; }
         public int ApplicationUserId { get; set; }
 
         public virtual ApplicationUser User { get; set; }

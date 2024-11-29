@@ -15,8 +15,11 @@ namespace ServiceProvider_DAL.Data.Configurations
         {
             builder.HasKey(o => o.OrderId);
 
-            builder.Property(o => o.OrderStatus)
-                .HasMaxLength(50);
+            builder.Property(o => o.Status)
+                .HasConversion(
+                c => c.ToString(),
+                c => (OrderStatus)Enum.Parse(typeof(OrderStatus), c)
+                );
 
             builder.Property(o => o.TotalAmount)
                .HasColumnType("decimal(18,2)");
