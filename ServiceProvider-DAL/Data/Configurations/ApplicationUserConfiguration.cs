@@ -13,8 +13,20 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
+            builder.HasKey(u => u.Id);
+
+            builder.Property(u => u.Id).ValueGeneratedNever();
+
             builder.Property(u => u.FullName).IsRequired().HasMaxLength(100);
+
             builder.Property(u => u.Address).HasMaxLength(250);
+
+            builder.Property(u => u.BirthDate)
+                .HasColumnType("date");
+
+            builder.Property(u => u.Email)
+                .HasMaxLength(200)
+                .IsRequired();
 
             builder.HasMany(u => u.Messages)
                    .WithOne(m => m.User)

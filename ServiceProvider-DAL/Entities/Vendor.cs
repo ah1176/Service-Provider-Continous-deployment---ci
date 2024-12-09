@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_DAL.Entities
 {
-    public class Vendor : ApplicationUser
+    public class Vendor : IdentityUser
     {
+        public string FullName { get; set; } = string.Empty;
         public string? BusinessName { get; set; }
-        public string BusinessType { get; set; } 
+        public string BusinessType { get; set; }  =string.Empty;
         public string? TaxNumber { get; set; } 
         public float? Rating { get; set; }
 

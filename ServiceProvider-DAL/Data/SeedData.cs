@@ -8,5 +8,6 @@ namespace ServiceProvider_DAL.Data
 {
     public class SeedData
     {
+
     }
 }

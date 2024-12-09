@@ -27,7 +27,6 @@ namespace SeeviceProvider_PL
 
             app.UseAuthorization();
 
-
             app.MapControllers();
 
             app.Run();
