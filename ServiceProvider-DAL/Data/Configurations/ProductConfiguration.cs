@@ -15,9 +15,13 @@ namespace ServiceProvider_DAL.Data.Configurations
         {
             builder.HasKey(p => p.ProductId);
 
-            builder.Property(p => p.Name)
+            builder.Property(p => p.NameEn)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(p => p.NameAr)
+               .IsRequired()
+               .HasMaxLength(100);
 
             builder.Property(p => p.Description)
                 .HasMaxLength(500);

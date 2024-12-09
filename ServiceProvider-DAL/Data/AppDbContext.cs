@@ -6,11 +6,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ServiceProvider_DAL.Data
 {
-    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>,int>
+    public class AppDbContext : IdentityDbContext<Vendor>
     {
+        public DbSet<ApplicationUser>? ApplicationUsers { get; set; }
+        public DbSet<Cart>? Carts { get; set; }
+        public DbSet<CartProduct>? CartProducts { get; set; }
+        public DbSet<Category>? Categories { get; set; }
+        public DbSet<SubCategory>? SubCategories { get; set; }
+        public DbSet<Message>? Messages { get; set; }
+        public DbSet<Order>? Orders { get; set; }
+        public DbSet<Product>? Products { get; set; }
+        public DbSet<OrderProduct>? OrderProducts { get; set; }
+        public DbSet<Payment>? Payments { get; set; }
+        public DbSet<Review>? Reviews { get; set; }
+        public DbSet<Shipping>? Shippings { get; set; }
+        public DbSet<VendorSubCategory>? VendorSubCategories { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        }
 
     }
 }

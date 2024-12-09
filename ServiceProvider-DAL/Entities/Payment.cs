@@ -20,7 +20,7 @@ namespace ServiceProvider_DAL.Entities
         public DateTime TransactionDate { get; set; }
         public PaymentStatus Status { get; set; }
 
-        public string PaymentMethod { get; set; } 
+        public string PaymentMethod { get; set; } = string.Empty;
 
         public int OrderId { get; set; }
 

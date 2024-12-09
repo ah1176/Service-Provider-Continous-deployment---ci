@@ -30,10 +30,6 @@ namespace ServiceProvider_DAL.Data.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
 
 
-            builder.HasMany(o => o.OrderProducts)
-                .WithOne(op => op.Order)
-                .HasForeignKey(op => op.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

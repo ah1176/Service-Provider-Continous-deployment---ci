@@ -33,7 +33,6 @@ namespace ServiceProvider_DAL.Data.Configurations
                 .HasForeignKey<Payment>(x => x.OrderId)
                 .IsRequired();
 
-
         }
     }
 }

@@ -17,7 +17,7 @@ namespace ServiceProvider_DAL.Data.Configurations
 
             builder.Property(m => m.MessageText)
                 .IsRequired()
-                .HasMaxLength(1000);
+                .HasMaxLength(1500);
 
 
             builder.Property(m => m.MessageDate)

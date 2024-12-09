@@ -9,15 +9,15 @@ namespace ServiceProvider_DAL.Entities
     public class Message
     {
         public int MessageId { get; set; }
-        public string MessageText { get; set; } 
+        public string MessageText { get; set; } = string.Empty;
         public DateTime MessageDate { get; set; } 
         public bool? IsRead {  get; set; }
-        public int ApplicationUserId { get; set; }
-        public int VendorId { get; set; }
+        public string ApplicationUserId { get; set; } = string.Empty;
+        public string VendorId { get; set; } = string.Empty ;
         public int OrderId { get; set; }
 
-        public ApplicationUser User { get; set; }
-        public Vendor Vendor { get; set; }
-        public Order Order { get; set; }
+        public ApplicationUser User { get; set; } = default!;
+        public Vendor Vendor { get; set; } = default!;
+        public Order Order { get; set; } = default!;
     }
 }
