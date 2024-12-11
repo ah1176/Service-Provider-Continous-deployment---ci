@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using ServiceProvider_BLL.Interfaces;
+using ServiceProvider_BLL.Reposatories;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
 
@@ -21,6 +23,7 @@ namespace SeeviceProvider_PL
                 options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection"));
             });
 
+            builder.Services.AddScoped(typeof(IUnitOfWork) , typeof(UnitOfWork));
 
             builder.Services.AddIdentity<Vendor, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>()
