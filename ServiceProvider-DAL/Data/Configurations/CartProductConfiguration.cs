@@ -15,14 +15,14 @@ namespace ServiceProvider_DAL.Data.Configurations
         {
            builder.HasKey(x => x.Id);
 
-            builder.HasOne(x => x.Cart)
+            builder.HasOne(cp => cp.Cart)
                  .WithMany(x => x.CartProducts)
-                 .HasForeignKey(x => x.CartId)
+                 .HasForeignKey(cp => cp.CartId)
                  .IsRequired();
 
-            builder.HasOne(x => x.Product)
+            builder.HasOne(cp => cp.Product)
                  .WithMany(x => x.CartProducts)
-                 .HasForeignKey(x => x.ProductId)
+                 .HasForeignKey(cp => cp.ProductId)
                  .IsRequired();
         }
     }

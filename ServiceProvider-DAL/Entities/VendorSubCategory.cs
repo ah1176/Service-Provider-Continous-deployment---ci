@@ -8,6 +8,7 @@ namespace ServiceProvider_DAL.Entities
 {
     public class VendorSubCategory
     {
+        public int Id { get; set; }
         public string VendorId { get; set; } = string.Empty;
         public int SubCategoryId { get; set; }
 

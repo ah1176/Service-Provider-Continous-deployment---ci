@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Review> builder)
         {
-            builder.HasKey(r => r.ReviewId);
+            builder.HasKey(r => r.Id);
 
             builder.Property(r => r.Rating)
                 .IsRequired()

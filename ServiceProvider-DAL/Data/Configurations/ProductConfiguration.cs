@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
-            builder.HasKey(p => p.ProductId);
+            builder.HasKey(p => p.Id);
 
             builder.Property(p => p.NameEn)
                 .IsRequired()

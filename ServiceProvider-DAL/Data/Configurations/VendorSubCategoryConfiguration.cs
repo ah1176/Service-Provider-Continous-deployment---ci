@@ -13,15 +13,15 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<VendorSubCategory> builder)
         {
-            builder.HasKey(x => new { x.VendorId, x.SubCategoryId });
+            builder.HasKey(x=>x.Id);
 
             builder.HasOne(x => x.SubCategory)
-                .WithMany(x => x.VendorSubCategories)
+                .WithMany(sc => sc.VendorSubCategories)
                 .HasForeignKey(x => x.SubCategoryId)
                 .IsRequired();
 
             builder.HasOne(x => x.Vendor)
-                .WithMany(x => x.VendorSubCategories)
+                .WithMany(v => v.VendorSubCategories)
                 .HasForeignKey(x => x.VendorId)
                 .IsRequired();
         }

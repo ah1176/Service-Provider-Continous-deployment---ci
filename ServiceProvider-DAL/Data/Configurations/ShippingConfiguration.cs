@@ -21,7 +21,7 @@ namespace ServiceProvider_DAL.Data.Configurations
 
 
             builder.HasOne(x => x.Order)
-                .WithOne(x => x.Shipping)
+                .WithOne(o => o.Shipping)
                 .HasForeignKey<Shipping>(x => x.OrderId)
                 .IsRequired();
 

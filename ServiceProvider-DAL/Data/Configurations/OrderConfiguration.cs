@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            builder.HasKey(o => o.OrderId);
+            builder.HasKey(o => o.Id);
 
             builder.Property(o => o.Status)
                 .HasConversion(

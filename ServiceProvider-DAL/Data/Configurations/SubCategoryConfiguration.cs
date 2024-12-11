@@ -24,7 +24,7 @@ namespace ServiceProvider_DAL.Data.Configurations
                .IsRequired();
 
             builder.HasOne(x => x.Category)
-                .WithMany(x => x.SubCategories)
+                .WithMany(c => c.SubCategories)
                 .HasForeignKey(x => x.CategoryId)
                 .IsRequired();
 

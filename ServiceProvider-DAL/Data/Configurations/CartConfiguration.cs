@@ -16,7 +16,7 @@ namespace ServiceProvider_DAL.Data.Configurations
             builder.HasKey(x => x.Id);
 
             builder.HasOne(x => x.User)
-                .WithOne(x => x.Cart)
+                .WithOne(u => u.Cart)
                 .HasForeignKey<Cart>(x => x.ApplicationUserId)
                 .IsRequired();
         }

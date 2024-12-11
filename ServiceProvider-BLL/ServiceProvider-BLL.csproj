@@ -19,9 +19,4 @@
     <ProjectReference Include="..\ServiceProvider-DAL\ServiceProvider-DAL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="Reposatories\" />
-  </ItemGroup>
-
 </Project>

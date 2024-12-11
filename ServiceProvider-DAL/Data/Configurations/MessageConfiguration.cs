@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Message> builder)
         {
-            builder.HasKey(m => m.MessageId);
+            builder.HasKey(m => m.Id);
 
             builder.Property(m => m.MessageText)
                 .IsRequired()
@@ -45,7 +45,7 @@ namespace ServiceProvider_DAL.Data.Configurations
             builder.HasOne(m => m.Order)
                 .WithMany(o => o.Messages)
                 .HasForeignKey(m => m.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

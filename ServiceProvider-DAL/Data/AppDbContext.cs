@@ -10,8 +10,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ServiceProvider_DAL.Data
 {
-    public class AppDbContext : IdentityDbContext<Vendor>
+    public class AppDbContext : IdentityDbContext<Vendor,IdentityRole,string>
     {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+
+        }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        }
+
         public DbSet<ApplicationUser>? ApplicationUsers { get; set; }
         public DbSet<Cart>? Carts { get; set; }
         public DbSet<CartProduct>? CartProducts { get; set; }
@@ -26,12 +37,7 @@ namespace ServiceProvider_DAL.Data
         public DbSet<Shipping>? Shippings { get; set; }
         public DbSet<VendorSubCategory>? VendorSubCategories { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
-
-            builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        }
+       
 
     }
 }

@@ -29,7 +29,7 @@ namespace ServiceProvider_DAL.Data.Configurations
                 .IsRequired();
 
             builder.HasOne(x => x.Order)
-                .WithOne(x => x.Payment)
+                .WithOne(o => o.Payment)
                 .HasForeignKey<Payment>(x => x.OrderId)
                 .IsRequired();
 

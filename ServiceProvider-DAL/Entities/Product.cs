@@ -8,7 +8,7 @@ namespace ServiceProvider_DAL.Entities
 {
     public class Product
     {
-        public int ProductId { get; set; }
+        public int Id { get; set; }
         public string NameEn { get; set; } = string.Empty;
         public string NameAr { get; set; } = string.Empty;
         public string? Description { get; set;} 

@@ -13,7 +13,6 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Vendor> builder)
         {
-            builder.HasBaseType<ApplicationUser>();
 
             builder.Property(v => v.BusinessName).HasMaxLength(200);
             builder.Property(v => v.BusinessType).HasMaxLength(100);
