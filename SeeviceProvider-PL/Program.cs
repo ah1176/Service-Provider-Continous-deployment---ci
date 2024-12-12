@@ -17,27 +17,8 @@ namespace SeeviceProvider_PL
 
             // Add services to the container.
 
-            //Inject DbContext
-            builder.Services.AddDbContext<AppDbContext>(options=>
-            {
-                options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection"));
-            });
-
-            builder.Services.AddScoped(typeof(IUnitOfWork) , typeof(UnitOfWork));
-
-            builder.Services.AddIdentity<Vendor, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
-
-            
-
-          
-
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //Inject all services
+            builder.Services.AddDependency(builder.Configuration);
 
             var app = builder.Build();
 
@@ -58,6 +39,8 @@ namespace SeeviceProvider_PL
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors();
 
             app.UseAuthorization();
 

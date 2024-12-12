@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
@@ -18,5 +19,6 @@ namespace ServiceProvider_BLL.Reposatories
         {
             _context = context;
         }
+
     }
 }

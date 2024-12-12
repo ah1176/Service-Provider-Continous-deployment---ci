@@ -1,4 +1,8 @@
-﻿using ServiceProvider_BLL.Interfaces;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
+using SeeviceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.VendorDto;
+using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
 using System;
@@ -16,6 +20,23 @@ namespace ServiceProvider_BLL.Reposatories
         public VendorRepository(AppDbContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<Result<IEnumerable<VendorResponse>>> GetVendorsByCategoryIdAsync(int categoryId, CancellationToken cancellationToken)
+        {
+            var vendors = await _context.Users
+                            .Where(v => v.VendorSubCategories!.Any(vc => vc.SubCategory.CategoryId == categoryId))
+                            .Select(v => new
+                            {
+                                v.Id,
+                                v.FullName,
+                                v.BusinessType,
+                                v.Rating,
+                            }).ToListAsync(cancellationToken);
+
+            return !vendors.Any() ?
+                Result.Failure<IEnumerable<VendorResponse>>(new Error("Not Found", "no vendors found in this category"))
+                : Result.Success(vendors.Adapt<IEnumerable<VendorResponse>>());
         }
     }
 }
