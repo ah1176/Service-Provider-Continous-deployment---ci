@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<CartProduct> builder)
         {
-           builder.HasKey(x => x.Id);
+           builder.HasKey(x => new {x.CartId ,x.ProductId});
 
             builder.HasOne(cp => cp.Cart)
                  .WithMany(x => x.CartProducts)
