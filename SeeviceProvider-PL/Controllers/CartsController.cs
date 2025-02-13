@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ServiceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.CartProductDto;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Entities;
@@ -8,18 +9,29 @@ namespace SeeviceProvider_PL.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CartsController(IUnitOfWork CartProductRepositry) : ControllerBase
+    public class CartsController(IUnitOfWork CartRepositry) : ControllerBase
     {
-        private readonly IUnitOfWork _cartProductRepositry = CartProductRepositry;
+        private readonly IUnitOfWork _cartRepositry = CartRepositry;
 
 
-        [HttpPost("add")]
-        public async Task<IActionResult> AddToCart(CartProductRequest request ,CancellationToken cancellationToken)
+        [HttpPost("items")]
+        public async Task<IActionResult> AddToCart([FromBody] CartProductRequest request , CancellationToken cancellationToken)
         {
-            var result = await _cartProductRepositry.CartProducts.AddItemToCartAsync(request, cancellationToken);
-            return result.IsSuccess ?
-                CreatedAtAction(nameof(AddToCart), new { cartId = request.CartId, productId = request.ProductId }, request)
-                : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.code, detail: result.Error.description);
+            var result = await _cartRepositry.Carts.AddToCartAsync(request ,cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPut("items")]
+        public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemRequest request , CancellationToken cancellationToken)
+        {
+            var result = await _cartRepositry.Carts.UpdateCartItemAsync(request , cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
         }
     }
 }

@@ -11,6 +11,5 @@ namespace ServiceProvider_BLL.Interfaces
 {
     public interface ICartProductRepository : IBaseRepository<CartProduct>
     {
-        Task<Result> AddItemToCartAsync(CartProductRequest request ,CancellationToken cancellationToken);
     }
 }

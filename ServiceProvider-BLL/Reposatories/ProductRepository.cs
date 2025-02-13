@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.ProductDto;
@@ -22,23 +23,5 @@ namespace ServiceProvider_BLL.Reposatories
             _context = context;
         }
 
-        public async Task<Result<IEnumerable<ProductsOfVendorDto>>> GetProductsAsync(string vendorId, CancellationToken cancellationToken)
-        {
-            var menu = await _context.Products!
-                .Where(p => p.VendorId == vendorId)
-                .Select(p => new
-                {
-                    p.Id,
-                    p.NameEn,
-                    p.NameAr,
-                    p.Description,
-                    p.Price
-
-                }).ToListAsync(cancellationToken);
-
-            return !menu.Any() ?
-                Result.Failure<IEnumerable<ProductsOfVendorDto>>(new Error("Not Found", "No menu items found for this provider"))
-                : Result.Success(menu.Adapt<IEnumerable<ProductsOfVendorDto>>());
-        }
     }
 }

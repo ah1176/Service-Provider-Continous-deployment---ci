@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
@@ -42,7 +43,7 @@ namespace ServiceProvider_BLL.Reposatories
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity is null)
-                return Result.Failure(new Error("Not Found",$"Entity with id {id} wasn't found"));
+                return Result.Failure(new Error("Not Found",$"Entity with id {id} wasn't found",StatusCodes.Status404NotFound));
 
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
@@ -56,7 +57,7 @@ namespace ServiceProvider_BLL.Reposatories
            var entities =  await _dbSet.AsNoTracking().ToListAsync();
 
                 return entities is null || !entities.Any()
-                ? Result.Failure<IEnumerable<T>>(new Error("Not Found", "no entities found"))
+                ? Result.Failure<IEnumerable<T>>(new Error("Not Found", "no entities found",StatusCodes.Status404NotFound))
                 :Result.Success<IEnumerable<T>>(entities);
         }
         public async Task<Result<T>> GetByIdAsync(int id)
@@ -64,7 +65,7 @@ namespace ServiceProvider_BLL.Reposatories
              var entity = await _dbSet.FindAsync(id);
              
             return entity is null
-                ?Result.Failure<T>(new Error("Not Found","entity was't found"))
+                ?Result.Failure<T>(new Error("Not Found","entity was't found", StatusCodes.Status404NotFound))
                 :Result.Success(entity);
         }
         public async Task<Result<T>> FindByExpress(Expression<Func<T, bool>> Criteria)
@@ -72,7 +73,7 @@ namespace ServiceProvider_BLL.Reposatories
            var entity =  await _dbSet.SingleOrDefaultAsync(Criteria);
 
             return entity is null
-               ? Result.Failure<T>(new Error("Not Found", "entity was't found"))
+               ? Result.Failure<T>(new Error("Not Found", "entity was't found", StatusCodes.Status404NotFound))
                : Result.Success(entity);
         }
         public async Task<Result<IEnumerable<T>>> FindAllByExpress(Expression<Func<T, bool>> Criteria)
@@ -80,7 +81,7 @@ namespace ServiceProvider_BLL.Reposatories
            var entities = await _dbSet.Where(Criteria).ToListAsync();
 
             return entities is null ?
-                Result.Failure<IEnumerable<T>>(new Error("Not Found", "no entities found"))
+                Result.Failure<IEnumerable<T>>(new Error("Not Found", "no entities found", StatusCodes.Status404NotFound))
                 :Result.Success<IEnumerable<T>>(entities);
         }
         public async Task<Result<IEnumerable<T>>> GetAllWithIncludeAsync(params Expression<Func<T, object>>[] includes)
@@ -104,7 +105,7 @@ namespace ServiceProvider_BLL.Reposatories
             }
             var result = await query.FirstOrDefaultAsync(filter);
             return result is null ?
-                Result.Failure<T>(new Error("Not Found","no entities found"))
+                Result.Failure<T>(new Error("Not Found","no entities found", StatusCodes.Status404NotFound))
                 :Result.Success(result);
         }
 

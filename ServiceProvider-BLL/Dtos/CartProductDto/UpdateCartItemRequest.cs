@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_BLL.Dtos.CartProductDto
 {
-    public record CartProductRequest(
-        string UserId,
+    public record UpdateCartItemRequest(
+        int CartId,
         int ProductId,
         int Quantity
-        );
+    );
     
 }

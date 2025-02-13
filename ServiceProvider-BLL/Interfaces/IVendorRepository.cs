@@ -1,4 +1,5 @@
 ﻿using SeeviceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.ProductDto;
 using ServiceProvider_BLL.Dtos.VendorDto;
 using ServiceProvider_DAL.Entities;
 using System;
@@ -11,6 +12,6 @@ namespace ServiceProvider_BLL.Interfaces
 {
     public interface IVendorRepository : IBaseRepository<Vendor>
     {
-        Task<Result<IEnumerable<VendorResponse>>> GetVendorsByCategoryIdAsync(int categoryId, CancellationToken cancellationToken);
+        Task<Result<IEnumerable<ProductsOfVendorDto>>> GetProviderMenuAsync(string providerId , CancellationToken cancellationToken);
     }
 }

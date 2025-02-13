@@ -1,7 +1,7 @@
 ﻿namespace SeeviceProvider_BLL.Abstractions
 {
-    public record Error(string code , string description)
+    public record Error(string code , string description, int? StatusCode)
     {
-        public static readonly Error None = new(string.Empty, string.Empty);
+        public static readonly Error None = new(string.Empty, string.Empty,null);
     }
 }

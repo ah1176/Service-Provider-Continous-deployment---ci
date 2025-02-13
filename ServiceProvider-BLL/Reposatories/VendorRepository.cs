@@ -1,7 +1,10 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.ProductDto;
 using ServiceProvider_BLL.Dtos.VendorDto;
+using ServiceProvider_BLL.Errors;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
@@ -22,21 +25,21 @@ namespace ServiceProvider_BLL.Reposatories
             _context = context;
         }
 
-        public async Task<Result<IEnumerable<VendorResponse>>> GetVendorsByCategoryIdAsync(int categoryId, CancellationToken cancellationToken)
+        public async Task<Result<IEnumerable<ProductsOfVendorDto>>> GetProviderMenuAsync(string providerId, CancellationToken cancellationToken)
         {
-            var vendors = await _context.Users
-                            .Where(v => v.VendorSubCategories!.Any(vc => vc.SubCategory.CategoryId == categoryId))
-                            .Select(v => new
-                            {
-                                v.Id,
-                                v.FullName,
-                                v.BusinessType,
-                                v.Rating,
-                            }).ToListAsync(cancellationToken);
+            var providerExists = await _context.Users.AnyAsync(u => u.Id == providerId ,cancellationToken);
+            if (!providerExists)
+                return Result.Failure<IEnumerable<ProductsOfVendorDto>>(VendorErrors.NotFound);
 
-            return !vendors.Any() ?
-                Result.Failure<IEnumerable<VendorResponse>>(new Error("Not Found", "no vendors found in this category"))
-                : Result.Success(vendors.Adapt<IEnumerable<VendorResponse>>());
+            var menu = await _context.Products!
+                .Where(p => p.VendorId == providerId)
+                .ProjectToType<ProductsOfVendorDto>()
+                .ToListAsync(cancellationToken);
+
+            return menu.Any()
+                ? Result.Success<IEnumerable<ProductsOfVendorDto>>(menu)
+                : Result.Failure<IEnumerable<ProductsOfVendorDto>>(ProductErrors.NotFound);
         }
+
     }
 }

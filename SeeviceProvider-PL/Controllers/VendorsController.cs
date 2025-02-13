@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ServiceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Interfaces;
 
 namespace SeeviceProvider_PL.Controllers
@@ -10,14 +11,13 @@ namespace SeeviceProvider_PL.Controllers
     {
         private readonly IUnitOfWork _vendorRepositry = vendorRepositry;
 
-        [HttpGet("{categoryId}")]
-        public async Task<IActionResult> GetAllVendorsInCateogry(int categoryId ,CancellationToken cancellationToken)
+        [HttpGet("{providerId}/menu")]
+        public async Task<IActionResult> GetProviderMenu([FromRoute]string providerId , CancellationToken cancellationToken)
         {
-            var result = await _vendorRepositry.Vendors.GetVendorsByCategoryIdAsync(categoryId, cancellationToken);
-
-            return result.IsSuccess ?
-                Ok(result.Value)
-                : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.code, detail: result.Error.description);
+            var result = await _vendorRepositry.Vendors.GetProviderMenuAsync(providerId ,cancellationToken);
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
         }
     }
 }
