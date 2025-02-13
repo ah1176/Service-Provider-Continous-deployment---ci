@@ -12,5 +12,6 @@ namespace ServiceProvider_BLL.Errors
     {
         public static readonly Error NotFound = new("Not Found", "No menu items found for this provider", StatusCodes.Status404NotFound);
         public static readonly Error ProductNotFound = new("Not Found", "Product does not exist", StatusCodes.Status404NotFound);
+        public static readonly Error ProductsNotFound = new("Not Found", " No products Found", StatusCodes.Status404NotFound);
     }
 }
