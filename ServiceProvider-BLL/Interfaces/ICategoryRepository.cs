@@ -12,7 +12,10 @@ namespace ServiceProvider_BLL.Interfaces
 {
     public interface ICategoryRepository : IBaseRepository<Category>
     {
-        Task<Result<IEnumerable<CategoryResponse>>> GetCategoriesAsync(CancellationToken cancellationToken);
-        Task<Result<IEnumerable<VendorResponse>>> GetProvidersByCategoryAsync(int categoryId , CancellationToken cancellationToken);
+        Task<Result<IEnumerable<CategoryResponse>>> GetCategoriesAsync(CancellationToken cancellationToken = default);
+        Task<Result<IEnumerable<VendorResponse>>> GetProvidersByCategoryAsync(int categoryId , CancellationToken cancellationToken = default);
+        Task<Result<IEnumerable<SubCategoryResponse>>> GetSubCategoryByCategoryAsync(int categoryId , CancellationToken cancellationToken = default);
+        Task<Result<CategoryResponse>> AddCategoryAsync(CategoryRequest request, CancellationToken cancellationToken = default);
+        Task<Result<SubCategoryResponse>> AddSubCategoryAsync(int categoryId,SubCategoryRequest request, CancellationToken cancellationToken = default);
     }
 }

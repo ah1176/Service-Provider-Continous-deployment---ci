@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ServiceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.CategoryDto;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Entities;
 
@@ -30,6 +32,37 @@ namespace SeeviceProvider_PL.Controllers
             var result = await _categoryRepositry.Categories.GetProvidersByCategoryAsync(categoryId , cancellationToken);
             return result.IsSuccess
                 ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpGet("{categoryId}/subCategories")]
+        public async Task<IActionResult> GetSubCategoryByCategory([FromRoute] int categoryId, CancellationToken cancellationToken)
+        {
+            var result = await _categoryRepositry.Categories.GetSubCategoryByCategoryAsync(categoryId, cancellationToken);
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPost("")]
+        public async Task<IActionResult> AddCategory([FromBody] CategoryRequest request, CancellationToken cancellationToken)
+        {
+            var result = await _categoryRepositry.Categories.AddCategoryAsync(request, cancellationToken);
+
+            return result.IsSuccess
+                ? CreatedAtAction(nameof(GetAllCategories), new { id = result.Value.Id }, result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPost("{categoryId}/subcategories")]
+       // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateSubCategory( [FromRoute] int categoryId,[FromBody] SubCategoryRequest request , CancellationToken cancellationToken)
+        {
+
+            var result = await _categoryRepositry.Categories.AddSubCategoryAsync(categoryId,request,cancellationToken);
+
+            return result.IsSuccess
+                ? CreatedAtAction(nameof(GetAllCategories), new { id = result.Value.Id }, result.Value)
                 : result.ToProblem();
         }
     }

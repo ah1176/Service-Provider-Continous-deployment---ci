@@ -15,7 +15,6 @@ namespace ServiceProvider_BLL.Interfaces
         Task<Result<ProductResponse>> GetProductAsync(int id , CancellationToken cancellationToken = default);
         Task<Result<ProductResponse>> AddProductAsync(string vendorId,ProductRequest request, CancellationToken cancellationToken = default);
         Task<Result> UpdateProductAsync(int id, UpdateProductRequest request, string vendorId, CancellationToken cancellationToken = default);
-
         Task<Result> DeleteProductAsync(int id, string vendorId, CancellationToken cancellationToken = default);
     }
 }
