@@ -11,5 +11,6 @@ namespace ServiceProvider_BLL.Errors
     public static class CartErrors
     {
         public static readonly Error CartNotFoundOrEmpty = new("Not Found", "Cart not found or empty", StatusCodes.Status404NotFound);
+        public static readonly Error CartNotFound = new("Not Found", "Cart not found ", StatusCodes.Status404NotFound);
     }
 }

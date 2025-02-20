@@ -13,6 +13,15 @@ namespace SeeviceProvider_PL.Controllers
     {
         private readonly IUnitOfWork _cartRepositry = CartRepositry;
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCartDetalis([FromRoute] int id , CancellationToken cancellationToken)
+        {
+            var result = await _cartRepositry.Carts.GetCart(id , cancellationToken);
+
+            return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
+        }
 
         [HttpPost("items")]
         public async Task<IActionResult> AddToCart([FromBody] CartProductRequest request , CancellationToken cancellationToken)

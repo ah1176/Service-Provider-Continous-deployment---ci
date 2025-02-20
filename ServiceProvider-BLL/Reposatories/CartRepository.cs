@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.CartProductDto;
+using ServiceProvider_BLL.Dtos.ProductDto;
 using ServiceProvider_BLL.Errors;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
@@ -23,6 +24,30 @@ namespace ServiceProvider_BLL.Reposatories
             _context = context;
         }
 
+        public async Task<Result<CartResponse>> GetCart(int cartId, CancellationToken cancellationToken = default)
+        {
+            var cart = await _context.Carts!
+              .Include(c => c.CartProducts)
+              .ThenInclude(cp => cp.Product)
+              .FirstOrDefaultAsync(c => c.Id == cartId, cancellationToken);
+
+            if (cart == null)
+                return Result.Failure<CartResponse>(CartErrors.CartNotFound);
+
+            var response = new CartResponse(
+                Id: cart.Id,
+                Items: cart.CartProducts.Select(cp => new CartItemResponse(
+                         ProductId: cp.ProductId,
+                         NameEn: cp.Product.NameEn,
+                         NameAr: cp.Product.NameAr,
+                         Price: cp.Product.Price,
+                         Quantity: cp.Quantity
+                )).ToList()
+                );
+
+            return Result.Success(response);  
+        
+        }
         public async Task<Result<CartProductResponse>> AddToCartAsync(CartProductRequest request , CancellationToken cancellationToken )
         {
             var cart = await _context.Carts!
@@ -51,6 +76,7 @@ namespace ServiceProvider_BLL.Reposatories
 
             return Result.Success(cartProduct.Adapt<CartProductResponse>());
         }
+
 
         public async Task<Result<CartProductResponse>> UpdateCartItemAsync(UpdateCartItemRequest request , CancellationToken cancellationToken)
         {
