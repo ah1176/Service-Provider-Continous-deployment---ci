@@ -12,6 +12,8 @@ namespace ServiceProvider_BLL.Interfaces
 {
     public interface IVendorRepository : IBaseRepository<Vendor>
     {
+        Task<Result<IEnumerable<VendorResponse>>> GetAllProviders(CancellationToken cancellationToken = default);
+        Task<Result<VendorResponse>> GetProviderDetails(string providerId,CancellationToken cancellationToken = default);
         Task<Result<IEnumerable<ProductsOfVendorDto>>> GetProviderMenuAsync(string providerId , CancellationToken cancellationToken);
     }
 }

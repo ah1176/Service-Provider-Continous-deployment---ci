@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.OrderDto;
+using ServiceProvider_BLL.Dtos.OrderProductDto;
+using ServiceProvider_BLL.Dtos.PaymentDto;
+using ServiceProvider_BLL.Dtos.ShippingDto;
 using ServiceProvider_BLL.Errors;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
@@ -21,6 +24,148 @@ namespace ServiceProvider_BLL.Reposatories
         public OrderRepository(AppDbContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<Result<OrderResponseV2>> GetOrderAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = await _context.Orders!
+                     .Include(o => o.OrderProducts)
+                     .ThenInclude(op => op.Product)
+                     .Include(o => o.Payment)
+                     .Include(o => o.Shipping)
+                     .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken: cancellationToken);
+
+            if (order == null)
+                return Result.Failure<OrderResponseV2>(OrderErrors.OrderNotFound);
+
+            var response = new OrderResponseV2(
+                 order.Id,
+                 order.TotalAmount,
+                 order.OrderDate,
+                 order.Status.ToString(),
+                 order.OrderProducts.Select(op => new OrderProductResponse(
+                     op.ProductId,
+                     op.Product.NameEn,
+                     op.Product.NameAr,
+                     op.Product.Price,
+                     op.Quantity
+                 )).ToList(),
+                 new PaymentResponse(
+                     order.Payment.TotalAmount,
+                     order.Payment.Status.ToString(),
+                     order.Payment.TransactionDate
+                 ),
+                 order.Shipping != null ? new ShippingResponse(
+                     order.Shipping.Status,
+                     order.Shipping.EstimatedDeliveryDate
+                 ) : null
+            );
+
+            return Result.Success(response);
+        }
+
+        public async Task<Result<IEnumerable<OrderResponseV2>>> GetUserOrdersAsync(string userId , CancellationToken cancellationToken = default)
+        {
+            var orders = await _context.Orders!
+                .Where(o => o.ApplicationUserId == userId)
+                .Include(o => o.OrderProducts)
+                .Include(o => o.Payment)
+                .Select(o => new OrderResponseV2(
+                    o.Id,
+                    o.TotalAmount,
+                    o.OrderDate,
+                    o.Status.ToString(),
+                    o.OrderProducts.Select(op => new OrderProductResponse(
+                        op.ProductId,
+                        op.Product.NameEn,
+                        op.Product.NameAr,
+                        op.Product.Price,
+                        op.Quantity
+                    )).ToList(),
+                    new PaymentResponse(
+                        o.Payment.TotalAmount,
+                        o.Payment.Status.ToString(),
+                        o.Payment.TransactionDate
+                    ),
+                    o.Shipping != null ? new ShippingResponse(
+                        o.Shipping.Status,
+                        o.Shipping.EstimatedDeliveryDate
+                    ) : null
+                ))
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            return Result.Success(orders.Adapt<IEnumerable<OrderResponseV2>>());
+        }
+        public async Task<Result<OrderResponseV2>> AddOrderAsync( OrderRequest request, CancellationToken cancellationToken = default)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var cart = await _context.Carts!
+                    .Include(c => c.CartProducts)
+                    .ThenInclude(cp => cp.Product)
+                    .FirstOrDefaultAsync(c => c.ApplicationUserId == request.UserId, cancellationToken: cancellationToken);
+                    
+
+                if (cart == null || !cart.CartProducts.Any())
+                    return Result.Failure<OrderResponseV2>(CartErrors.CartNotFoundOrEmpty);
+
+                var order = new Order
+                {
+                    ApplicationUserId = request.UserId,
+                    TotalAmount = cart.CartProducts.Sum(cp => cp.Quantity * cp.Product.Price),
+                    OrderDate = DateTime.UtcNow,
+                    Status = OrderStatus.Pending
+                };
+
+                _context.Orders!.Add(order);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                var payment = new Payment
+                {
+                    OrderId = order.Id,
+                    TotalAmount = order.TotalAmount,
+                    Status = PaymentStatus.Pending,
+                    PaymentMethod = request.PaymentMethod,
+                    TransactionDate = DateTime.UtcNow
+                };
+
+                _context.Payments!.Add(payment);
+
+                var orderProducts = cart.CartProducts.Select(cp => new OrderProduct
+                {
+                    OrderId = order.Id,
+                    ProductId = cp.ProductId,
+                    Quantity = cp.Quantity
+                }).ToList();
+
+                _context.OrderProducts!.AddRange(orderProducts);
+                _context.CartProducts!.RemoveRange(cart.CartProducts);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return await GetOrderAsync(order.Id);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Result.Failure<OrderResponseV2>(OrderErrors.OrderCreationFaild);
+            }
+        }
+
+        public async Task<Result<OrderResponseV2>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusRequest request, CancellationToken cancellationToken = default)
+        {
+            var order = await _context.Orders!.FindAsync(orderId , cancellationToken);
+            if (order == null)
+                return Result.Failure<OrderResponseV2>(OrderErrors.OrderNotFound);
+
+            order.Status = (OrderStatus)Enum.Parse(typeof(OrderStatus), request.NewStatus, true); 
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await GetOrderAsync(orderId);
         }
 
         public async Task<Result<OrderResponse>> CheckoutAsync(CheckoutRequest request, CancellationToken cancellationToken)
@@ -69,5 +214,7 @@ namespace ServiceProvider_BLL.Reposatories
                 return Result.Failure<OrderResponse>(CheckOutErrors.CheckOutFaild);
             }
         }
+
+
     }
 }

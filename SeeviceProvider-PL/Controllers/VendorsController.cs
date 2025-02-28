@@ -11,6 +11,25 @@ namespace SeeviceProvider_PL.Controllers
     {
         private readonly IUnitOfWork _vendorRepositry = vendorRepositry;
 
+        [HttpGet("")]
+        public async Task<IActionResult> GetProviders(CancellationToken cancellationToken)
+        {
+            var result = await _vendorRepositry.Vendors.GetAllProviders(cancellationToken);
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpGet("{providerId}")]
+        public async Task<IActionResult> GetProviderDetalis([FromRoute] string providerId, CancellationToken cancellationToken)
+        {
+            var result = await _vendorRepositry.Vendors.GetProviderDetails(providerId ,cancellationToken);
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+
         [HttpGet("{providerId}/menu")]
         public async Task<IActionResult> GetProviderMenu([FromRoute]string providerId , CancellationToken cancellationToken)
         {
