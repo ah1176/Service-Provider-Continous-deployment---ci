@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using ServiceProvider_BLL.Interfaces;
+using ServiceProvider_BLL.Reposatories;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
 
@@ -15,36 +17,33 @@ namespace SeeviceProvider_PL
 
             // Add services to the container.
 
-            //Inject DbContext
-            builder.Services.AddDbContext<AppDbContext>(options=>
-            {
-                options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection"));
-            });
-
-
-            builder.Services.AddIdentity<Vendor, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
-
-            
-
-          
-
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //Inject all services
+            builder.Services.AddDependency(builder.Configuration);
 
             var app = builder.Build();
 
 
-            //initialize seeddata
+
+            // Seed the database with initial data
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                await SeedData.Initialize(services);
+                try
+                {
+                    var context = services.GetRequiredService<AppDbContext>();
+                    var userManager = services.GetRequiredService<UserManager<Vendor>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    // Await the Initialize method to ensure it completes before moving on
+                    await SeedData.Initialize(context, userManager, roleManager);
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while seeding the database.");
+                }
             }
+
 
 
             // Configure the HTTP request pipeline.
@@ -55,6 +54,8 @@ namespace SeeviceProvider_PL
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors();
 
             app.UseAuthorization();
 

@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<OrderProduct> builder)
         {
-            builder.HasKey(op => op.Id);
+            builder.HasKey(op => new {op.OrderId , op.ProductId});
 
 
             builder.HasOne(op => op.Order)

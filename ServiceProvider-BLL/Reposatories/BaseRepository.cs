@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
 using System;
@@ -21,58 +23,90 @@ namespace ServiceProvider_BLL.Reposatories
             _dbSet = _context.Set<T>();
         }
 
-        public async Task AddAsync(T entity)
+        public async Task<Result> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
+
+            return Result.Success();
         }
 
-        public async Task UpdateAsync(T entity)
+        public async Task<Result> UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
             await _context.SaveChangesAsync();
+
+            return Result.Success();
         }
 
-        public async Task RemoveAsync(int id)
+        public async Task<Result> RemoveAsync(int id)
         {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
-            {
-                _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
-            }
+            var entity = await _dbSet.FindAsync(id);
+            if (entity is null)
+                return Result.Failure(new Error("Not Found",$"Entity with id {id} wasn't found",StatusCodes.Status404NotFound));
+
+            _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            return Result.Success();
+
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync() =>
-            await _dbSet.AsNoTracking().ToListAsync();
+        public async Task<Result<IEnumerable<T>>> GetAllAsync()
+        {
+           var entities =  await _dbSet.AsNoTracking().ToListAsync();
 
-        public async Task<T> GetByIdAsync(int id) =>
-            await _dbSet.FindAsync(id);
+                return entities is null || !entities.Any()
+                ? Result.Failure<IEnumerable<T>>(new Error("Not Found", "no entities found",StatusCodes.Status404NotFound))
+                :Result.Success<IEnumerable<T>>(entities);
+        }
+        public async Task<Result<T>> GetByIdAsync(int id)
+        {
+             var entity = await _dbSet.FindAsync(id);
+             
+            return entity is null
+                ?Result.Failure<T>(new Error("Not Found","entity was't found", StatusCodes.Status404NotFound))
+                :Result.Success(entity);
+        }
+        public async Task<Result<T>> FindByExpress(Expression<Func<T, bool>> Criteria)
+        {
+           var entity =  await _dbSet.SingleOrDefaultAsync(Criteria);
 
-        public async Task<T> FindByExpress(Expression<Func<T, bool>> Criteria) =>
-            await _dbSet.SingleOrDefaultAsync(Criteria);
+            return entity is null
+               ? Result.Failure<T>(new Error("Not Found", "entity was't found", StatusCodes.Status404NotFound))
+               : Result.Success(entity);
+        }
+        public async Task<Result<IEnumerable<T>>> FindAllByExpress(Expression<Func<T, bool>> Criteria)
+        {
+           var entities = await _dbSet.Where(Criteria).ToListAsync();
 
-        public async Task<IEnumerable<T>> FindAllByExpress(Expression<Func<T, bool>> Criteria) =>
-            await _dbSet.Where(Criteria).ToListAsync();
-
-        public async Task<IEnumerable<T>> GetAllWithIncludeAsync(params Expression<Func<T, object>>[] includes)
+            return entities is null ?
+                Result.Failure<IEnumerable<T>>(new Error("Not Found", "no entities found", StatusCodes.Status404NotFound))
+                :Result.Success<IEnumerable<T>>(entities);
+        }
+        public async Task<Result<IEnumerable<T>>> GetAllWithIncludeAsync(params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet;
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
-            return await query.ToListAsync();
+            var result = await query.ToListAsync();
+
+            return Result.Success<IEnumerable<T>>(result);
         }
 
-        public async Task<T> GetFirstOrDefaultWithIncludeAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes)
+        public async Task<Result<T>> GetFirstOrDefaultWithIncludeAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet;
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
-            return await query.FirstOrDefaultAsync(filter);
+            var result = await query.FirstOrDefaultAsync(filter);
+            return result is null ?
+                Result.Failure<T>(new Error("Not Found","no entities found", StatusCodes.Status404NotFound))
+                :Result.Success(result);
         }
 
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter)

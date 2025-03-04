@@ -8,7 +8,6 @@ namespace ServiceProvider_DAL.Entities
 {
     public class CartProduct
     {
-        public int Id { get; set; }
 
         public int Quantity { get; set; }
 

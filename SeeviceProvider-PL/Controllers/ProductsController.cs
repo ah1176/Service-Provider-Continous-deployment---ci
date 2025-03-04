@@ -1,0 +1,70 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ServiceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.ProductDto;
+using ServiceProvider_BLL.Interfaces;
+using System.Security.Claims;
+
+namespace SeeviceProvider_PL.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductsController(IUnitOfWork productRepositry) : ControllerBase
+    {
+        private readonly IUnitOfWork _productRepositry = productRepositry;
+
+        [HttpGet("")]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken) 
+        {
+            var result = await _productRepositry.Products.GetAllProductsAsync(cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get([FromRoute] int id,CancellationToken cancellationToken)
+        {
+            var result = await _productRepositry.Products.GetProductAsync(id,cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateService([FromBody] ProductRequest request , CancellationToken cancellationToken)
+        {
+
+
+            var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _productRepositry.Products.AddProductAsync(vendorId!, request,cancellationToken);
+            return result.IsSuccess
+                ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateService(int id, [FromBody] UpdateProductRequest request , CancellationToken cancellationToken)
+        {
+
+            var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _productRepositry.Products.UpdateProductAsync(id, request, vendorId!,cancellationToken);
+            return result.IsSuccess ? 
+                NoContent():
+                result.ToProblem();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteService(int id , CancellationToken cancellationToken)
+        {
+            var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _productRepositry.Products.DeleteProductAsync(id, vendorId!,cancellationToken);
+            return result.IsSuccess 
+                ? NoContent() 
+                : result.ToProblem();
+        }
+    }
+}

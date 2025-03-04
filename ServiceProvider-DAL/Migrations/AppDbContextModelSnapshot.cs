@@ -219,12 +219,6 @@ namespace ServiceProvider_DAL.Migrations
 
             modelBuilder.Entity("ServiceProvider_DAL.Entities.CartProduct", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("CartId")
                         .HasColumnType("int");
 
@@ -234,9 +228,7 @@ namespace ServiceProvider_DAL.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("CartId");
+                    b.HasKey("CartId", "ProductId");
 
                     b.HasIndex("ProductId");
 
@@ -342,12 +334,6 @@ namespace ServiceProvider_DAL.Migrations
 
             modelBuilder.Entity("ServiceProvider_DAL.Entities.OrderProduct", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -357,9 +343,7 @@ namespace ServiceProvider_DAL.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
+                    b.HasKey("OrderId", "ProductId");
 
                     b.HasIndex("ProductId");
 
@@ -632,24 +616,15 @@ namespace ServiceProvider_DAL.Migrations
 
             modelBuilder.Entity("ServiceProvider_DAL.Entities.VendorSubCategory", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("VendorId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("SubCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<string>("VendorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
+                    b.HasKey("VendorId", "SubCategoryId");
 
                     b.HasIndex("SubCategoryId");
-
-                    b.HasIndex("VendorId");
 
                     b.ToTable("VendorSubCategories");
                 });

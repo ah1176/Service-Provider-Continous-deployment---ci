@@ -13,7 +13,7 @@ namespace ServiceProvider_DAL.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<VendorSubCategory> builder)
         {
-            builder.HasKey(x=>x.Id);
+            builder.HasKey(x=> new{ x.VendorId ,x.SubCategoryId});
 
             builder.HasOne(x => x.SubCategory)
                 .WithMany(sc => sc.VendorSubCategories)
