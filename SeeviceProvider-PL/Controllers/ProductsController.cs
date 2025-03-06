@@ -37,12 +37,32 @@ namespace SeeviceProvider_PL.Controllers
                 : result.ToProblem();
         }
 
+        [HttpGet("most-requested")]
+        public async Task<IActionResult> GetMostRequested(CancellationToken cancellationToken)
+        {
+            var result = await _productRepositry.Products.GetMostCommonProductAsync(cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpGet("most-recent")]
+        public async Task<IActionResult> GetMostRecent(CancellationToken cancellationToken)
+        {
+            var result = await _productRepositry.Products.GetNewProductsAsync(cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
         [HttpGet("{productId}/reviews")]
         public async Task<IActionResult> GetServiceReviews([FromRoute] int productId, CancellationToken cancellationToken)
         {
             var result = await productRepositry.Products.GetReviewsForSpecificServiceAsync(productId, cancellationToken);
 
-            return result.IsSuccess ? Ok(result) : result.ToProblem();
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
         [HttpPost("{productId}/reviews")]
