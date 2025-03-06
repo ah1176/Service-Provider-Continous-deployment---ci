@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.ProductDto;
+using ServiceProvider_BLL.Dtos.ReviewDto;
 using ServiceProvider_BLL.Interfaces;
+using ServiceProvider_DAL.Entities;
 using System.Security.Claims;
+using System.Threading;
 
 namespace SeeviceProvider_PL.Controllers
 {
@@ -34,12 +37,29 @@ namespace SeeviceProvider_PL.Controllers
                 : result.ToProblem();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateService([FromBody] ProductRequest request , CancellationToken cancellationToken)
+        [HttpGet("{productId}/reviews")]
+        public async Task<IActionResult> GetServiceReviews([FromRoute] int productId, CancellationToken cancellationToken)
+        {
+            var result = await productRepositry.Products.GetReviewsForSpecificServiceAsync(productId, cancellationToken);
+
+            return result.IsSuccess ? Ok(result) : result.ToProblem();
+        }
+
+        [HttpPost("{productId}/reviews")]
+        public async Task<IActionResult> CreateReview([FromRoute]int productId, [FromBody] ReviewRequest request)
+        {
+            var result = await productRepositry.Products.AddReviewAsync(productId,request);
+
+            return result.IsSuccess
+                ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPost("{vendorId}")]
+        public async Task<IActionResult> CreateService([FromRoute]string vendorId,[FromBody] ProductRequest request , CancellationToken cancellationToken)
         {
 
-
-            var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await _productRepositry.Products.AddProductAsync(vendorId!, request,cancellationToken);
             return result.IsSuccess
                 ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)

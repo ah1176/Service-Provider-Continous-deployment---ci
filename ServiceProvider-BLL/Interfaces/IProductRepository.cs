@@ -1,5 +1,6 @@
 ﻿using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.ProductDto;
+using ServiceProvider_BLL.Dtos.ReviewDto;
 using ServiceProvider_DAL.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,5 +17,8 @@ namespace ServiceProvider_BLL.Interfaces
         Task<Result<ProductResponse>> AddProductAsync(string vendorId,ProductRequest request, CancellationToken cancellationToken = default);
         Task<Result> UpdateProductAsync(int id, UpdateProductRequest request, string vendorId, CancellationToken cancellationToken = default);
         Task<Result> DeleteProductAsync(int id, string vendorId, CancellationToken cancellationToken = default);
+
+        Task<Result<ReviewResponse>> AddReviewAsync(int productId, ReviewRequest request, CancellationToken cancellationToken = default);
+        Task<Result<IEnumerable<ReviewResponse>>> GetReviewsForSpecificServiceAsync(int productId, CancellationToken cancellationToken = default);
     }
 }
