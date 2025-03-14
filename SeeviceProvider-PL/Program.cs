@@ -6,6 +6,11 @@ using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_BLL.Reposatories;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Principal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SeeviceProvider_PL
 {
@@ -19,6 +24,43 @@ namespace SeeviceProvider_PL
 
             //Inject all services
             builder.Services.AddDependency(builder.Configuration);
+
+
+            // Add Authentication
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("k")),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
+
+
+            // Identity Register (Using AddIdentityCore to Avoid Conflict)
+            builder.Services.AddIdentityCore<Vendor>(options =>
+            {
+                options.Password.RequiredLength = 4;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+            })
+            .AddRoles<IdentityRole>() // If roles are used
+            .AddEntityFrameworkStores<AppDbContext>();
+
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            });
+
+
+
 
             var app = builder.Build();
 
@@ -56,6 +98,8 @@ namespace SeeviceProvider_PL
             app.UseHttpsRedirection();
 
             app.UseCors();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

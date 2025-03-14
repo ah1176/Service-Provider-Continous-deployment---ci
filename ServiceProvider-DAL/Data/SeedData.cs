@@ -161,6 +161,8 @@ namespace ServiceProvider_DAL.Data
                     adminUser = new Vendor
                     {
                         UserName = adminUserName,
+                        FullName = adminUserName,
+                        BusinessType =adminUserName,
                         Email = "admin@Vendor.com",
                         EmailConfirmed = true
                     };

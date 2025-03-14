@@ -11,5 +11,6 @@ namespace ServiceProvider_BLL.Errors
     public static class VendorErrors
     {
         public static readonly Error NotFound = new("Not Found", "no Vendors found", StatusCodes.Status404NotFound);
+        public static readonly Error IncorrectPassword = new("Vendor.IncorrectPassword", "Incorrect old password.", StatusCodes.Status400BadRequest);
     }
 }
