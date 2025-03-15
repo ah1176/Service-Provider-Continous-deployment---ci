@@ -1,0 +1,15 @@
+﻿using SeeviceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.AuthenticationDto;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ServiceProvider_BLL.Interfaces
+{
+    public interface IAuthRepositry
+    {
+        Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellation);
+    }
+}

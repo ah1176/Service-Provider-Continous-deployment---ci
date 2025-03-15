@@ -2,13 +2,17 @@
 using FluentValidation.AspNetCore;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using ServiceProvider_BLL.Authentication;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_BLL.Reposatories;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
 using System.Reflection;
+using System.Text;
 
 namespace SeeviceProvider_PL
 {
@@ -21,9 +25,8 @@ namespace SeeviceProvider_PL
             services.AddEndpointsApiExplorer();
 
             services.AddSwaggerGen();
-                
-           
 
+                
             services.AddCors(options =>
                     options.AddDefaultPolicy(builder =>
                             builder.AllowAnyOrigin()
@@ -34,7 +37,8 @@ namespace SeeviceProvider_PL
 
             services
                 .AddMapsterConfiguration()
-                .AddFluentValidationConfiguration();
+                .AddFluentValidationConfiguration()
+                .AddAuthConfiguration(configuration);
 
             var connectionString = configuration.GetConnectionString("Default Connection") ??
              throw new InvalidOperationException("connection string 'Default Connection' not found.");
@@ -42,11 +46,12 @@ namespace SeeviceProvider_PL
             services.AddDbContext<AppDbContext>(options =>
             options.UseLazyLoadingProxies().UseSqlServer(connectionString));
 
-            services.AddIdentity<Vendor, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+            //services.AddIdentity<Vendor, IdentityRole>()
+            //    .AddEntityFrameworkStores<AppDbContext>()
+            //    .AddDefaultTokenProviders();
 
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
+            services.AddScoped<IAuthRepositry, AuthRepositry>();
 
 
 
@@ -68,6 +73,42 @@ namespace SeeviceProvider_PL
         {
             services.AddFluentValidationAutoValidation()
                 .AddValidatorsFromAssembly(typeof(VendorRepository).Assembly);
+
+            return services;
+        }
+
+        private static IServiceCollection AddAuthConfiguration(this IServiceCollection services , IConfiguration configuration) 
+        {
+            services.AddSingleton<IJwtProvider, JwtProvider>();
+            services.AddIdentity<Vendor, IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>();
+
+            services.AddOptions<JwtOptions>()
+                .BindConfiguration(JwtOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+           .AddJwtBearer(o =>
+           {
+               o.SaveToken = true;
+               o.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateIssuerSigningKey = true,
+                   ValidateIssuer = true,
+                   ValidateAudience = true,
+                   ValidateLifetime = true,
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+                   ValidIssuer = jwtSettings?.Issuer,
+                   ValidAudience = jwtSettings?.Audience
+               };
+           });
 
             return services;
         }
