@@ -1,5 +1,7 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
 using ServiceProvider_BLL.Dtos.ProductDto;
@@ -16,13 +18,16 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_BLL.Reposatories
 {
-    public class VendorRepository : BaseRepository<Vendor> , IVendorRepository
+    public class VendorRepository : BaseRepository<Vendor>, IVendorRepository
     {
         private readonly AppDbContext _context;
-
-        public VendorRepository(AppDbContext context) : base(context)
+        private readonly UserManager<Vendor> _usermanager;
+        private readonly IPasswordHasher<Vendor> _passwordHasher;
+        public VendorRepository(AppDbContext context, UserManager<Vendor> userManager, IPasswordHasher<Vendor> passwordHasher) : base(context)
         {
             _context = context;
+            _usermanager = userManager;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<Result<IEnumerable<VendorResponse>>> GetAllProviders(CancellationToken cancellationToken = default)
@@ -42,7 +47,7 @@ namespace ServiceProvider_BLL.Reposatories
             var provider = await _context.Users.AsNoTracking()
                         .FirstOrDefaultAsync(x => x.Id == providerId, cancellationToken);
 
-            if(provider == null)
+            if (provider == null)
                 return Result.Failure<VendorResponse>(VendorErrors.NotFound);
 
             return Result.Success(provider.Adapt<VendorResponse>());
@@ -50,7 +55,7 @@ namespace ServiceProvider_BLL.Reposatories
 
         public async Task<Result<IEnumerable<ProductsOfVendorDto>>> GetProviderMenuAsync(string providerId, CancellationToken cancellationToken)
         {
-            var providerExists = await _context.Users.AnyAsync(u => u.Id == providerId ,cancellationToken);
+            var providerExists = await _context.Users.AnyAsync(u => u.Id == providerId, cancellationToken);
             if (!providerExists)
                 return Result.Failure<IEnumerable<ProductsOfVendorDto>>(VendorErrors.NotFound);
 
@@ -63,6 +68,47 @@ namespace ServiceProvider_BLL.Reposatories
                 ? Result.Success<IEnumerable<ProductsOfVendorDto>>(menu)
                 : Result.Failure<IEnumerable<ProductsOfVendorDto>>(ProductErrors.NotFound);
         }
-        
+       
+
+        public async Task<Result<UpdateVendorResponse>> UpdateVendorAsync(string id,UpdateVendorResponse vendorDto, CancellationToken cancellationToken = default)
+        {
+
+            var vendor = await _usermanager.FindByIdAsync(id);
+            if (vendor == null )
+                return Result.Failure<UpdateVendorResponse>(VendorErrors.NotFound);
+            
+            vendor.UserName = vendorDto.UserName;
+            if (vendor.FullName == null)
+                vendor.FullName = vendorDto.UserName;
+
+            vendor.BusinessName = vendorDto.BusinessName;
+
+            var result = await _usermanager.UpdateAsync(vendor);
+            await _context.SaveChangesAsync();
+            return Result.Success(vendor.Adapt<UpdateVendorResponse>());
+        }
+
+        public async Task<Result<ChangeVendorPasswordResponse>> ChangeVendorPasswordAsync(string id, ChangeVendorPasswordResponse vendorDto, CancellationToken cancellationToken = default)
+        {
+
+            var vendor = await _usermanager.FindByIdAsync(id);
+            if (vendor == null)
+                return Result.Failure<ChangeVendorPasswordResponse>(VendorErrors.NotFound);
+
+
+            var passwordValid = await _usermanager.CheckPasswordAsync(vendor, vendorDto.OldPassword);
+            if (!passwordValid)
+            {
+                return Result.Failure<ChangeVendorPasswordResponse>(VendorErrors.IncorrectPassword);
+            }
+
+
+            await _usermanager.ChangePasswordAsync(vendor, vendorDto.OldPassword, vendorDto.NewPassword);
+            await _context.SaveChangesAsync();
+          
+            return Result.Success(vendor.Adapt<ChangeVendorPasswordResponse>());
+        }
+
+
     }
 }

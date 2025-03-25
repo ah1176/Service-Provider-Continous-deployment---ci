@@ -15,5 +15,7 @@ namespace ServiceProvider_BLL.Interfaces
         Task<Result<IEnumerable<VendorResponse>>> GetAllProviders(CancellationToken cancellationToken = default);
         Task<Result<VendorResponse>> GetProviderDetails(string providerId,CancellationToken cancellationToken = default);
         Task<Result<IEnumerable<ProductsOfVendorDto>>> GetProviderMenuAsync(string providerId , CancellationToken cancellationToken);
+        Task<Result<UpdateVendorResponse>> UpdateVendorAsync(string id,UpdateVendorResponse vendorDto, CancellationToken cancellationToken = default);
+        Task<Result<ChangeVendorPasswordResponse>> ChangeVendorPasswordAsync(string id, ChangeVendorPasswordResponse vendorDto, CancellationToken cancellationToken = default);
     }
 }

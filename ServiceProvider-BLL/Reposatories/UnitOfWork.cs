@@ -1,5 +1,7 @@
-﻿using ServiceProvider_BLL.Interfaces;
+﻿using Microsoft.AspNetCore.Identity;
+using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
+using ServiceProvider_DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,8 @@ namespace ServiceProvider_BLL.Reposatories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
-
+        private readonly UserManager<Vendor> _usermanager;
+        private readonly IPasswordHasher<Vendor> _passwordHasher;
         public IApplicationUserRepository ApplicationUsers { get; private set; }
         public IVendorRepository Vendors { get; private set; }
         public IVendorSubCategoryRepository VendorSubCategories { get; private set; }
@@ -29,12 +32,13 @@ namespace ServiceProvider_BLL.Reposatories
 
 
 
-        public UnitOfWork(AppDbContext context)
+        public UnitOfWork(AppDbContext context,UserManager<Vendor> userManager, IPasswordHasher<Vendor> passwordHasher)
         { 
             _context = context;
-
+            _usermanager = userManager;
+            _passwordHasher = passwordHasher;
             ApplicationUsers = new ApplicationUserRepository(_context);
-            Vendors = new VendorRepository(_context);
+            Vendors = new VendorRepository(_context,_usermanager,_passwordHasher);
             Products = new ProductRepository(_context);
             VendorSubCategories = new VendorSubCategoryRepository(_context);
             SubCategories = new SubCategoryRepository(_context);
