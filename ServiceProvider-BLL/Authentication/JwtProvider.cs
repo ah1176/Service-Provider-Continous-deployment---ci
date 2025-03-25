@@ -16,14 +16,16 @@ namespace ServiceProvider_BLL.Authentication
     public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
     {
         private readonly JwtOptions _options = options.Value;
-        public (string token, int expiresIn) GenerateToken(Vendor vendor)
+        public (string token, int expiresIn) GenerateToken(Vendor vendor,IEnumerable<string> roles)
         {
             Claim[] claims = [
                 new(JwtRegisteredClaimNames.Sub,vendor.Id),
                 new(JwtRegisteredClaimNames.Email,vendor.Email!),
                 new(JwtRegisteredClaimNames.GivenName,vendor.FullName),
                 new(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                ];
+                new(nameof(roles),JsonSerializer.Serialize(roles),JsonClaimValueTypes.JsonArray),
+                new ("IsApproved", vendor.IsApproved.ToString())
+            ];
 
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
 

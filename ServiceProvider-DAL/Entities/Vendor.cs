@@ -15,6 +15,8 @@ namespace ServiceProvider_DAL.Entities
         public string? TaxNumber { get; set; } 
         public float? Rating { get; set; }
 
+        public bool IsApproved { get; set; }
+
         public virtual ICollection<Message>? Messages {  get; set; } = new List<Message>();
         public virtual ICollection<Product>? Products { get; set; } = new List<Product>();
         public virtual ICollection<VendorSubCategory>? VendorSubCategories { get; set; } = new List<VendorSubCategory>();

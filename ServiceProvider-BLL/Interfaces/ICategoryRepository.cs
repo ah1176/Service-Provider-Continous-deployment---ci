@@ -17,5 +17,6 @@ namespace ServiceProvider_BLL.Interfaces
         Task<Result<IEnumerable<SubCategoryResponse>>> GetSubCategoryByCategoryAsync(int categoryId , CancellationToken cancellationToken = default);
         Task<Result<CategoryResponse>> AddCategoryAsync(CategoryRequest request, CancellationToken cancellationToken = default);
         Task<Result<SubCategoryResponse>> AddSubCategoryAsync(int categoryId,SubCategoryRequest request, CancellationToken cancellationToken = default);
+         Task<Result> DeleteSubCategoryAsync(int subCategoryId, CancellationToken cancellationToken = default);
     }
 }

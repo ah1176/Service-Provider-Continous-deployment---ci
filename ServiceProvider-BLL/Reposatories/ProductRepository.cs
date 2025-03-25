@@ -56,6 +56,12 @@ namespace ServiceProvider_BLL.Reposatories
             if (!subCategoryExists)
                 return Result.Failure<ProductResponse>(SubCategoryErrors.SubCategoryNotFound);
 
+            var isRegistered = await _context.VendorSubCategories!
+            .AnyAsync(vsc => vsc.VendorId == vendorId && vsc.SubCategoryId == request.SubCategoryId, cancellationToken: cancellationToken);
+
+            if (!isRegistered)
+                return Result.Failure<ProductResponse>(VendorErrors.VendorNotRegisterdInSubCategory);
+
             var product = request.Adapt<Product>();
 
             product.VendorId = vendorId;
@@ -150,7 +156,7 @@ namespace ServiceProvider_BLL.Reposatories
                     );
 
             if (existingReview != null)
-                return Result.Failure<ReviewResponse>(ReviewErrors.HasNotOrdered);
+                return Result.Failure<ReviewResponse>(ReviewErrors.DuplicatedReview);
 
 
             var review = new Review
@@ -173,43 +179,6 @@ namespace ServiceProvider_BLL.Reposatories
             return Result.Success(response);
         }
 
-        private async Task UpdateProductAverageRating(int productId)
-        {
-            var productReviews = await _context.Reviews!
-                .Where(r => r.ProductId == productId)
-                .ToListAsync();
-
-            if (productReviews.Any())
-            {
-                var averageRating = productReviews.Average(r => r.Rating);
-
-                var product = await _context.Products!.FindAsync(productId);
-                if (product != null)
-                {
-                    var vendor = await _context.Users.FindAsync(product.VendorId);
-                    if (vendor != null)
-                    {
-                        // Update vendor's rating based on all their product reviews
-                        var vendorProducts = await _context.Products
-                            .Where(p => p.VendorId == product.VendorId)
-                            .ToListAsync();
-
-                        var vendorProductReviews = await _context.Reviews!
-                            .Where(r => vendorProducts.Select(p => p.Id).Contains(r.ProductId))
-                            .ToListAsync();
-
-                        if (vendorProductReviews.Any())
-                        {
-                            vendor.Rating = vendorProductReviews.Average(r => (float)r.Rating);
-                        }
-
-                        _context.Users.Update(vendor);
-                    }
-
-                    await _context.SaveChangesAsync();
-                }
-            }
-        }
 
         public async Task<Result<List<ProductRequestCount>>> GetMostCommonProductAsync(CancellationToken cancellationToken = default)
         {
@@ -254,6 +223,45 @@ namespace ServiceProvider_BLL.Reposatories
                 return Result.Failure<IEnumerable<ProductResponse>>(ProductErrors.ProductsNotFound);
 
             return Result.Success(products.Adapt<IEnumerable<ProductResponse>>());
+        }
+
+
+        private async Task UpdateProductAverageRating(int productId)
+        {
+            var productReviews = await _context.Reviews!
+                .Where(r => r.ProductId == productId)
+                .ToListAsync();
+
+            if (productReviews.Any())
+            {
+                var averageRating = productReviews.Average(r => r.Rating);
+
+                var product = await _context.Products!.FindAsync(productId);
+                if (product != null)
+                {
+                    var vendor = await _context.Users.FindAsync(product.VendorId);
+                    if (vendor != null)
+                    {
+                        // Update vendor's rating based on all their product reviews
+                        var vendorProducts = await _context.Products
+                            .Where(p => p.VendorId == product.VendorId)
+                            .ToListAsync();
+
+                        var vendorProductReviews = await _context.Reviews!
+                            .Where(r => vendorProducts.Select(p => p.Id).Contains(r.ProductId))
+                            .ToListAsync();
+
+                        if (vendorProductReviews.Any())
+                        {
+                            vendor.Rating = vendorProductReviews.Average(r => (float)r.Rating);
+                        }
+
+                        _context.Users.Update(vendor);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
     }
 }

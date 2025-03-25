@@ -9,6 +9,6 @@ namespace ServiceProvider_BLL.Authentication
 {
     public interface IJwtProvider
     {
-        (string token, int expiresIn) GenerateToken(Vendor vendor);
+        (string token, int expiresIn) GenerateToken(Vendor vendor , IEnumerable<string> roles);
     }
 }

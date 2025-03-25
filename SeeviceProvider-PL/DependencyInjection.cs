@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ServiceProvider_BLL.Authentication;
+using ServiceProvider_BLL.Authentication.Filters;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_BLL.Reposatories;
 using ServiceProvider_DAL.Data;
@@ -81,7 +82,8 @@ namespace SeeviceProvider_PL
         {
             services.AddSingleton<IJwtProvider, JwtProvider>();
             services.AddIdentity<Vendor, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             services.AddOptions<JwtOptions>()
                 .BindConfiguration(JwtOptions.SectionName)
@@ -109,6 +111,24 @@ namespace SeeviceProvider_PL
                    ValidAudience = jwtSettings?.Audience
                };
            });
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.SignIn.RequireConfirmedEmail = true;
+                options.User.RequireUniqueEmail = true;
+
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOrApprovedVendor", policy =>
+                policy.RequireRole("Vendor","Admin").RequireAssertion(context =>
+                        context.User.Identity!.IsAuthenticated &&
+                        context.User.HasClaim(c => c.Type == "IsApproved" && c.Value.Equals("true", StringComparison.OrdinalIgnoreCase))));
+            });
+
+            services.AddScoped<IUserClaimsPrincipalFactory<Vendor>, CustomUserClaimsPrincipalFactory>();
 
             return services;
         }

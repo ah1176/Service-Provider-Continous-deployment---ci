@@ -74,12 +74,13 @@ namespace SeeviceProvider_PL.Controllers
                 ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
                 : result.ToProblem();
         }
-
-        [HttpPost("{vendorId}")]
-        public async Task<IActionResult> CreateService([FromRoute]string vendorId,[FromBody] ProductRequest request , CancellationToken cancellationToken)
+        
+        [HttpPost("")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
+        public async Task<IActionResult> CreateService([FromBody] ProductRequest request , CancellationToken cancellationToken)
         {
 
-            //var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await _productRepositry.Products.AddProductAsync(vendorId!, request,cancellationToken);
             return result.IsSuccess
                 ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
@@ -87,6 +88,7 @@ namespace SeeviceProvider_PL.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
         public async Task<IActionResult> UpdateService(int id, [FromBody] UpdateProductRequest request , CancellationToken cancellationToken)
         {
 
@@ -98,6 +100,7 @@ namespace SeeviceProvider_PL.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
         public async Task<IActionResult> DeleteService(int id , CancellationToken cancellationToken)
         {
             var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace ServiceProvider_BLL.Dtos.VendorDto
 {
-    public record VendorResponse(
+    public record VendorRatingResponse(
         string Id,
         string Email,
-        string BusinessName,
+        string? BusinessName,
         string BusinessType,
-        string TaxNumber
+        float? Rating
     );
-
 }

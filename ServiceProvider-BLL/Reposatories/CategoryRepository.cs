@@ -97,6 +97,12 @@ namespace ServiceProvider_BLL.Reposatories
             if (!categoryIsExisit)
                 return Result.Failure<SubCategoryResponse>(CategoryErrors.CategoryNotFound);
 
+            var subCategoryIsExisit = await _context.SubCategories!
+                .AnyAsync(x => x.NameEn == request.NameEn || x.NameAr == request.NameAr, cancellationToken);
+
+            if (subCategoryIsExisit)
+                return Result.Failure<SubCategoryResponse>(CategoryErrors.DuplicateSubCategory);
+
             var subCategory = request.Adapt<SubCategory>();
 
             subCategory.CategoryId = categoryId;
@@ -106,6 +112,21 @@ namespace ServiceProvider_BLL.Reposatories
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result.Success(subCategory.Adapt<SubCategoryResponse>());
+        }
+
+        public async Task<Result> DeleteSubCategoryAsync(int subCategoryId , CancellationToken cancellationToken = default) 
+        {
+            var subCategory = await _context.SubCategories!.FirstOrDefaultAsync(x => x.Id == subCategoryId);
+
+
+            if (subCategory == null)
+                return Result.Failure(CategoryErrors.SubCategoryNotFound);
+
+            _context.SubCategories!.Remove(subCategory);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
         }
     }
 }

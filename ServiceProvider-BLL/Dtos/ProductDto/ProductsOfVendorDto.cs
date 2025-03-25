@@ -11,6 +11,9 @@ namespace ServiceProvider_BLL.Dtos.ProductDto
         string NameEn,
         string NameAr,
         string Description,
-        decimal Price
+        string ImageUrl,
+        decimal Price,
+        string CategoryNameEn,
+        string CategoryNameAr
         );
 }

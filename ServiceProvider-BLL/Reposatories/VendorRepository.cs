@@ -1,45 +1,91 @@
-﻿using Mapster;
+﻿using Azure.Core;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.Common;
 using ServiceProvider_BLL.Dtos.ProductDto;
 using ServiceProvider_BLL.Dtos.VendorDto;
 using ServiceProvider_BLL.Errors;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Data;
 using ServiceProvider_DAL.Entities;
-using System;
+using System.Linq.Dynamic.Core;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ServiceProvider_BLL.Reposatories
 {
     public class VendorRepository : BaseRepository<Vendor>, IVendorRepository
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<Vendor> _usermanager;
+        private readonly UserManager<Vendor> _userManager;
         private readonly IPasswordHasher<Vendor> _passwordHasher;
         public VendorRepository(AppDbContext context, UserManager<Vendor> userManager, IPasswordHasher<Vendor> passwordHasher) : base(context)
         {
             _context = context;
-            _usermanager = userManager;
+            _userManager = userManager;
             _passwordHasher = passwordHasher;
         }
 
         public async Task<Result<IEnumerable<VendorResponse>>> GetAllProviders(CancellationToken cancellationToken = default)
         {
-            var vendors = await _context.Users.AsNoTracking()
-                                .ToListAsync(cancellationToken: cancellationToken);
-            if (!vendors.Any())
+            var approvedVendors = await _context.Users
+                .Where(x => x.IsApproved)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            if (!approvedVendors.Any())
                 return Result.Failure<IEnumerable<VendorResponse>>(VendorErrors.NotFound);
 
-            var providers = vendors.Adapt<IEnumerable<VendorResponse>>();
+            var notAdmins = new List<Vendor>();
+            foreach (var vendor in approvedVendors)
+            {
+                if (await _userManager.IsInRoleAsync(vendor, "Vendor"))
+                {
+                    notAdmins.Add(vendor);
+                }
+            }
+
+            var providers = notAdmins.Adapt<IEnumerable<VendorResponse>>();
 
             return Result.Success(providers);
+        }
+
+        public async Task<Result<PaginatedList<VendorRatingResponse>>> GetVendorsRatings(RequestFilter request,CancellationToken cancellationToken = default) 
+        {
+
+            var query = _context.Users
+                .Where(x => x.IsApproved);
+
+            if (!query.Any())
+                return Result.Failure<PaginatedList<VendorRatingResponse>>(VendorErrors.NotFound);
+
+            if (!string.IsNullOrEmpty(request.SearchValue))
+            {
+                query = query.Where(x =>
+                     x.FullName.Contains(request.SearchValue) ||
+                     (x.BusinessName ?? "").Contains(request.SearchValue) ||
+                     (x.BusinessType ?? "").Contains(request.SearchValue));
+            }
+
+
+            if (!string.IsNullOrEmpty(request.SortColumn))
+            {
+                query = query.OrderBy($"{request.SortColumn} {request.SortDirection}");
+            }
+
+            var source = query.ProjectToType<VendorRatingResponse>().AsNoTracking();
+
+            var vendors = await PaginatedList<VendorRatingResponse>.CreateAsync(source, request.PageNumer, request.PageSize);
+
+            return Result.Success(vendors);
         }
 
         public async Task<Result<VendorResponse>> GetProviderDetails(string providerId, CancellationToken cancellationToken = default)
@@ -61,7 +107,16 @@ namespace ServiceProvider_BLL.Reposatories
 
             var menu = await _context.Products!
                 .Where(p => p.VendorId == providerId)
-                .ProjectToType<ProductsOfVendorDto>()
+                .Select(p => new ProductsOfVendorDto(
+                     p.Id,
+                     p.NameEn,
+                     p.NameAr,
+                     p.Description!,
+                     p.ImageUrl,
+                     p.Price,
+                     p.SubCategory.Category.NameEn,
+                     p.SubCategory.Category.NameAr
+                ))
                 .ToListAsync(cancellationToken);
 
             return menu.Any()
@@ -73,7 +128,7 @@ namespace ServiceProvider_BLL.Reposatories
         public async Task<Result<UpdateVendorResponse>> UpdateVendorAsync(string id,UpdateVendorResponse vendorDto, CancellationToken cancellationToken = default)
         {
 
-            var vendor = await _usermanager.FindByIdAsync(id);
+            var vendor = await _userManager.FindByIdAsync(id);
             if (vendor == null )
                 return Result.Failure<UpdateVendorResponse>(VendorErrors.NotFound);
             
@@ -83,32 +138,84 @@ namespace ServiceProvider_BLL.Reposatories
 
             vendor.BusinessName = vendorDto.BusinessName;
 
-            var result = await _usermanager.UpdateAsync(vendor);
+            var result = await _userManager.UpdateAsync(vendor);
             await _context.SaveChangesAsync();
             return Result.Success(vendor.Adapt<UpdateVendorResponse>());
         }
 
-        public async Task<Result<ChangeVendorPasswordResponse>> ChangeVendorPasswordAsync(string id, ChangeVendorPasswordResponse vendorDto, CancellationToken cancellationToken = default)
+        public async Task<Result> ChangeVendorPasswordAsync(string vendorId, ChangeVendorPasswordRequest request)
         {
 
-            var vendor = await _usermanager.FindByIdAsync(id);
-            if (vendor == null)
-                return Result.Failure<ChangeVendorPasswordResponse>(VendorErrors.NotFound);
+            var vendor = await _userManager.FindByIdAsync(vendorId);
+            var result = await _userManager.ChangePasswordAsync(vendor!, request.CurrentPassword, request.NewPassword);
+            if (result.Succeeded)
+                return Result.Success();
 
+            var error = result.Errors.First();
 
-            var passwordValid = await _usermanager.CheckPasswordAsync(vendor, vendorDto.OldPassword);
-            if (!passwordValid)
-            {
-                return Result.Failure<ChangeVendorPasswordResponse>(VendorErrors.IncorrectPassword);
-            }
-
-
-            await _usermanager.ChangePasswordAsync(vendor, vendorDto.OldPassword, vendorDto.NewPassword);
-            await _context.SaveChangesAsync();
-          
-            return Result.Success(vendor.Adapt<ChangeVendorPasswordResponse>());
+            return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
         }
 
+
+        public async Task<Result> DeleteVendorAsync(string vendorId , CancellationToken cancellationToken = default) 
+        {
+            var vendor = await _context.Users.FirstOrDefaultAsync(v => v.Id == vendorId, cancellationToken);
+            if (vendor == null)
+                return Result.Failure(VendorErrors.NotFound);
+
+             _context.Users.Remove(vendor);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+        }
+
+        public async Task<Result<IEnumerable<VendorResponse>>> GetPendingVendorsAsync(CancellationToken cancellationToken = default)
+        {
+            var notApprovedUsers = await _userManager.Users
+             .Where(u => !u.IsApproved)
+             .ToListAsync(cancellationToken);
+
+            // Then, filter in memory for those who are in the Vendor role
+            var pendingVendors = new List<Vendor>();
+            foreach (var vendor in notApprovedUsers)
+            {
+                if (await _userManager.IsInRoleAsync(vendor, "Vendor"))
+                {
+                    pendingVendors.Add(vendor);
+                }
+            }
+
+            // Project to VendorResponse after filtering
+            var vendorResponses = pendingVendors.Adapt<IEnumerable<VendorResponse>>();
+
+            if (!vendorResponses.Any())
+                return Result.Failure<IEnumerable<VendorResponse>>(VendorErrors.NoPendingVendors);
+
+            return Result.Success(vendorResponses);
+        }
+
+        public async Task<Result> ApproveVendorAsync(string vendorId, CancellationToken cancellationToken = default)
+        {
+            var vendor = await _userManager.FindByIdAsync(vendorId);
+            if (vendor == null || !(await _userManager.IsInRoleAsync(vendor, "Vendor")))
+                return Result.Failure(VendorErrors.NotFound);
+
+            if (vendor.IsApproved && vendor.EmailConfirmed)
+                return Result.Failure(VendorErrors.ApprovedVendor);
+
+            vendor.IsApproved = true;
+            vendor.EmailConfirmed = true;
+
+            var result = await _userManager.UpdateAsync(vendor);
+            if (result.Succeeded)
+                return Result.Success();
+
+            var error = result.Errors.First();
+
+            return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+
+        }
 
     }
 }

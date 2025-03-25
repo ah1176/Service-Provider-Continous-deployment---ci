@@ -23,6 +23,14 @@ namespace SeeviceProvider_PL.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-      
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterationRequest request, CancellationToken cancellationToken)
+        {
+            var result = await _authRepositry.RegisterAsync(request, cancellationToken);
+
+            return result.IsSuccess? Ok(): result.ToProblem();
+        }
+
+
     }
 }

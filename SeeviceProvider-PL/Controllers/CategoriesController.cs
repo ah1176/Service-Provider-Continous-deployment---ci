@@ -55,7 +55,7 @@ namespace SeeviceProvider_PL.Controllers
         }
 
         [HttpPost("{categoryId}/subcategories")]
-       // [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
         public async Task<IActionResult> CreateSubCategory( [FromRoute] int categoryId,[FromBody] SubCategoryRequest request , CancellationToken cancellationToken)
         {
 
@@ -63,6 +63,20 @@ namespace SeeviceProvider_PL.Controllers
 
             return result.IsSuccess
                 ? CreatedAtAction(nameof(GetAllCategories), new { id = result.Value.Id }, result.Value)
+                : result.ToProblem();
+        }
+
+
+        
+        [HttpDelete("subcategories/{subCategoryId}")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
+        public async Task<IActionResult> DeleteSubCategory([FromRoute] int subCategoryId, CancellationToken cancellationToken)
+        {
+
+            var result = await _categoryRepositry.Categories.DeleteSubCategoryAsync(subCategoryId ,cancellationToken);
+
+            return result.IsSuccess
+                ? Ok()
                 : result.ToProblem();
         }
     }
