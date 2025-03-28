@@ -53,6 +53,7 @@ namespace SeeviceProvider_PL
 
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped<IAuthRepositry, AuthRepositry>();
+            services.AddScoped<IAnalyticsRepositry, AnalyticsRepositry>();
 
 
 

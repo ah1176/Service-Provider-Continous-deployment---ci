@@ -34,6 +34,19 @@ namespace SeeviceProvider_PL.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
+        [HttpGet("vendors/{vendorId}")]
+        public async Task<IActionResult> GetVendorOrders(string vendorId, CancellationToken cancellationToken)
+        {
+            // Authorization check
+            //var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (currentUserId != userId && !User.IsInRole("Admin"))
+            //    return Forbid();
+
+            var result = await _orderRepositry.Orders.GetVendorsOrders(vendorId, cancellationToken);
+
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
+
         [HttpPost("")]
         public async Task<IActionResult> AddOrder ( [FromBody] OrderRequest request, CancellationToken cancellationToken)
         {

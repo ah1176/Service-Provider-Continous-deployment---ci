@@ -30,7 +30,7 @@ namespace ServiceProvider_BLL.Reposatories
         public IPaymentRepository Payments { get; private set; }
         public IMessageRepository Messages { get; private set; }
 
-
+      
 
         public UnitOfWork(AppDbContext context,UserManager<Vendor> userManager, IPasswordHasher<Vendor> passwordHasher)
         { 
@@ -51,6 +51,7 @@ namespace ServiceProvider_BLL.Reposatories
             Shippings = new ShippingRepository(_context);
             Payments = new PaymentRepository(_context);
             Messages = new MessageRepository(_context);
+           
         }
 
         public async Task<int> Complete() =>

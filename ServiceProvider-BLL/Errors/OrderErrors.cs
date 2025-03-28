@@ -12,6 +12,7 @@ namespace ServiceProvider_BLL.Errors
     {
         public static readonly Error OrderNotFound = new("Not Found", "Order does not exist", StatusCodes.Status404NotFound);
 
-        public static readonly Error OrderCreationFaild = new("Failure", "Order creation failed", StatusCodes.Status417ExpectationFailed);
+        public static readonly Error OrderCreationFaild = new("Failure", "Order creation failed", StatusCodes.Status400BadRequest);
+        public static readonly Error NoOrdersForThisVendor = new("NoOrdersForThisVendor", "No orders found for this vendor.", StatusCodes.Status404NotFound);
     }
 }

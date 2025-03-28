@@ -168,6 +168,34 @@ namespace ServiceProvider_BLL.Reposatories
             return await GetOrderAsync(orderId);
         }
 
+        public async Task<Result<IEnumerable<OrdersOfVendorResponse>>> GetVendorsOrders(string vendorId,CancellationToken cancellationToken = default) 
+        {
+            var orders = await _context.Orders!
+                .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+                .Where(o => o.OrderProducts.Any(op => op.Product.VendorId == vendorId))
+                .Select(x => new OrdersOfVendorResponse(
+                    x.Id,
+                    x.TotalAmount,
+                    x.OrderDate,
+                    x.Status.ToString(),
+                    x.OrderProducts.Select(op => new OrderProductResponse(
+                        op.ProductId,
+                        op.Product.NameEn,
+                        op.Product.NameAr,
+                        op.Product.Price,
+                        op.Quantity
+                    )).ToList()
+                )).ToListAsync(cancellationToken);
+
+            if (!orders.Any())
+            {
+                return Result.Failure<IEnumerable<OrdersOfVendorResponse>>(OrderErrors.NoOrdersForThisVendor);
+            }
+
+            return Result.Success<IEnumerable<OrdersOfVendorResponse>>(orders);
+        }
+
         public async Task<Result<OrderResponse>> CheckoutAsync(CheckoutRequest request, CancellationToken cancellationToken)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();

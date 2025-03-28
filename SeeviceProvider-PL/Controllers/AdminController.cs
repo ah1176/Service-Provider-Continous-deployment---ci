@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.Common;
 using ServiceProvider_BLL.Interfaces;
 
 namespace SeeviceProvider_PL.Controllers
@@ -9,10 +10,37 @@ namespace SeeviceProvider_PL.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class AdminController(IAuthRepositry authRepositry) : ControllerBase
+    public class AdminController(IAnalyticsRepositry analyticsRepositry) : ControllerBase
     {
-        private readonly IAuthRepositry _authRepositry = authRepositry;
-        
+        private readonly IAnalyticsRepositry _analyticsRepositry = analyticsRepositry;
+
+
+        [HttpGet("today-stats")]
+        public async Task<IActionResult> GetTodayStats(CancellationToken cancellationToken = default) 
+        {
+            var result = await _analyticsRepositry.GetTodaysStatsAsync(cancellationToken);
+
+            return Ok(result.Value);
+        }
+
+        [HttpGet("top-vendors")]
+        public async Task<IActionResult> GetTopVendors()
+        {
+            var result = await _analyticsRepositry.GetTopVendorsAsync();
+
+            return Ok(result.Value);
+        }
+
+
+        [HttpGet("project-summary")]
+        public async Task<IActionResult> GetProjectSummary()
+        {
+            var result = await _analyticsRepositry.GetOverallStatisticsAsync();
+
+            return Ok(result.Value);
+        }
+
+
 
         //[Authorize]
         //[HttpGet("debug-claims")]
