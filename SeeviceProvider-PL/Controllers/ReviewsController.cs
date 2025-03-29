@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.Common;
 using ServiceProvider_BLL.Dtos.ReviewDto;
 using ServiceProvider_BLL.Interfaces;
 using ServiceProvider_DAL.Entities;
@@ -21,6 +23,15 @@ namespace SeeviceProvider_PL.Controllers
 
         //    return result.IsSuccess ? Ok(result) : result.ToProblem();
         //}
+
+        [Authorize]
+        [HttpGet("{vendorId}/vendor-reviews")]
+        public async Task<IActionResult> GetVendorRatings([FromRoute] string vendorId , [FromQuery] RequestFilter request , CancellationToken cancellationToken = default)  
+        {
+            var result = await _reviewRepository.Reviews.GetRatingsByVendorAsync(vendorId , request , cancellationToken);
+
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
 
         [HttpPut("{reviewId}")]
         public async Task<IActionResult> UpdateReview([FromRoute]int reviewId, [FromBody] UpdateReviewRequest request) 

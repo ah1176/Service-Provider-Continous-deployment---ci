@@ -45,6 +45,7 @@ namespace SeeviceProvider_PL.Controllers
         }
 
         [HttpPost("")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> AddCategory([FromBody] CategoryRequest request, CancellationToken cancellationToken)
         {
             var result = await _categoryRepositry.Categories.AddCategoryAsync(request, cancellationToken);

@@ -2,6 +2,8 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using SeeviceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Abstractions;
+using ServiceProvider_BLL.Dtos.Common;
 using ServiceProvider_BLL.Dtos.ReviewDto;
 using ServiceProvider_BLL.Errors;
 using ServiceProvider_BLL.Interfaces;
@@ -24,6 +26,29 @@ namespace ServiceProvider_BLL.Reposatories
             _context = context;
         }
 
+
+        public async Task<Result<PaginatedList<VendorReviewsResponse>>> GetRatingsByVendorAsync(string vendorId, RequestFilter request , CancellationToken cancellationToken = default) 
+        {
+            var query = _context.Reviews!
+                .Where(x => x.Product.VendorId == vendorId)
+                .Select(x => new VendorReviewsResponse(
+                    x.Id,
+                    x.Rating,
+                    x.Comment,
+                    x.CreatedAt,
+                    x.User.FullName,
+                    x.Product.NameEn,
+                    x.Product.NameAr
+                ))
+                .AsNoTracking();
+
+            if (!query.Any())
+                return Result.Failure<PaginatedList<VendorReviewsResponse>>(ReviewErrors.VendorReviewsNotFound);
+
+            var reviews = await PaginatedList<VendorReviewsResponse>.CreateAsync(query, request.PageNumer, request.PageSize, cancellationToken);
+
+            return Result.Success(reviews);
+        }
         public async Task<Result> UpdateReviewAsync(int reviewId, UpdateReviewRequest request, CancellationToken cancellationToken = default)
         {
             var review = await _context.Reviews!.FindAsync(reviewId, cancellationToken);
