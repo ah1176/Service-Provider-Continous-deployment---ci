@@ -10,10 +10,10 @@ namespace SeeviceProvider_PL.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class AdminController(IAnalyticsRepositry analyticsRepositry) : ControllerBase
+    public class AdminController(IAnalyticsRepositry analyticsRepositry,IUnitOfWork generalRepository) : ControllerBase
     {
         private readonly IAnalyticsRepositry _analyticsRepositry = analyticsRepositry;
-
+        private readonly IUnitOfWork _generalRepository = generalRepository;
 
         [HttpGet("today-stats")]
         public async Task<IActionResult> GetTodayStats(CancellationToken cancellationToken = default) 
@@ -30,6 +30,31 @@ namespace SeeviceProvider_PL.Controllers
 
             return Ok(result.Value);
         }
+
+        [HttpGet("all-users")]
+        public async Task<IActionResult> GetAllMobileUsers([FromQuery] RequestFilter request , CancellationToken cancellationToken = default)
+        {
+            var result = await _generalRepository.ApplicationUsers.GetAllMobileUsers(request,cancellationToken);
+
+            return result.IsSuccess? Ok(result.Value): result.ToProblem();
+        }
+
+        [HttpGet("all-transactions")]
+        public async Task<IActionResult> GetTransactions ([FromQuery] RequestFilter request, CancellationToken cancellationToken = default)
+        {
+            var result = await _generalRepository.Payments.GetAllTransactions(request, cancellationToken);
+
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
+
+        [HttpGet("users/{userId}/all-transactions")]
+        public async Task<IActionResult> GetUserTransactions([FromRoute] string userId,[FromQuery] RequestFilter request, CancellationToken cancellationToken = default)
+        {
+            var result = await _generalRepository.Payments.GetUserTransactions(userId,request, cancellationToken);
+
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
+
 
 
         [HttpGet("project-summary")]

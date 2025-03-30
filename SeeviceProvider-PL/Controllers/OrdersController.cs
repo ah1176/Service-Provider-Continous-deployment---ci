@@ -35,6 +35,7 @@ namespace SeeviceProvider_PL.Controllers
         }
 
         [HttpGet("vendors/{vendorId}")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
         public async Task<IActionResult> GetVendorOrders(string vendorId, CancellationToken cancellationToken)
         {
             // Authorization check
@@ -58,7 +59,7 @@ namespace SeeviceProvider_PL.Controllers
         }
 
         [HttpPut("{id}/status")]
-       // [Authorize(Roles = "Admin,Vendor")]
+        [Authorize(Policy = "AdminOrApprovedVendor")]
         public async Task<IActionResult> UpdateOrderStatus([FromRoute] int id, [FromBody] UpdateOrderStatusRequest request , CancellationToken cancellationToken)
         {
             var result = await _orderRepositry.Orders.UpdateOrderStatusAsync(id, request , cancellationToken);
