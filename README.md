@@ -10,7 +10,7 @@ The Service Provider API is a RESTful interface designed to facilitate interacti
 
 ### Base URL
 
-All endpoints are relative to the base URL: `{{host}}`. Replace `{{host}}` with the actual domain of the deployed service (e.g., `https://service-provider-api.example.com`).
+All endpoints are relative to the base URL: `{{host}}`. Replace `{{host}}` with the actual domain of the deployed service (e.g., `https://service-provider-api.example1.com`).
 
 ### Authentication
 
